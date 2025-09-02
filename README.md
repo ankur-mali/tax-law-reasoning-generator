@@ -306,7 +306,7 @@ exporter.to_csv(evaluation_results, "results.csv")
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Based on the MuSR paper: "Testing the Limits of Chain-of-thought with Multistep Soft Reasoning"
 - Inspired by the need for scalable AI evaluation benchmarks
