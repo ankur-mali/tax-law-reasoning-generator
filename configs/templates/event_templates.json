@@ -1,0 +1,370 @@
+{
+  "income_events": {
+    "employment_income": {
+      "salary": {
+        "base_amounts": [30000, 50000, 75000, 100000, 150000, 200000, 300000],
+        "variations": ["bonus_eligible", "commission_component", "overtime_available"],
+        "tax_implications": {
+          "withholding_required": true,
+          "fica_subject": true,
+          "state_tax_subject": true
+        },
+        "complexity_modifiers": {
+          "basic": ["single_employer", "standard_withholding"],
+          "intermediate": ["multiple_employers", "supplemental_payments"],
+          "advanced": ["stock_compensation", "deferred_compensation"],
+          "expert": ["international_assignments", "split_dollar_arrangements"]
+        }
+      },
+      "bonus": {
+        "base_amounts": [1000, 5000, 10000, 25000, 50000, 100000],
+        "variations": ["performance_bonus", "retention_bonus", "signing_bonus"],
+        "tax_implications": {
+          "supplemental_withholding": true,
+          "fica_subject": true,
+          "timing_considerations": true
+        }
+      },
+      "commission": {
+        "base_amounts": [2000, 8000, 15000, 30000, 75000],
+        "variations": ["draw_against_commission", "override_commission", "team_commission"],
+        "tax_implications": {
+          "irregular_income": true,
+          "estimated_tax_planning": true
+        }
+      },
+      "stock_compensation": {
+        "rsu_vesting": {
+          "base_amounts": [10000, 25000, 50000, 100000, 250000],
+          "variations": ["cliff_vesting", "graded_vesting", "performance_vesting"],
+          "tax_implications": {
+            "ordinary_income": true,
+            "withholding_required": true,
+            "basis_determination": true
+          }
+        },
+        "iso_exercise": {
+          "base_amounts": [5000, 15000, 40000, 100000],
+          "variations": ["cashless_exercise", "cash_exercise", "sell_to_cover"],
+          "tax_implications": {
+            "amt_preference": true,
+            "holding_period_requirements": true,
+            "basis_adjustments": true
+          }
+        }
+      }
+    },
+    "business_income": {
+      "self_employment": {
+        "base_amounts": [25000, 50000, 100000, 200000, 500000],
+        "variations": ["sole_proprietorship", "single_member_llc", "independent_contractor"],
+        "tax_implications": {
+          "self_employment_tax": true,
+          "quarterly_estimates": true,
+          "business_deductions": true
+        }
+      },
+      "rental_income": {
+        "base_amounts": [12000, 24000, 48000, 96000, 200000],
+        "variations": ["residential_rental", "commercial_rental", "vacation_rental"],
+        "tax_implications": {
+          "passive_activity": true,
+          "depreciation_deductions": true,
+          "at_risk_rules": true
+        }
+      },
+      "partnership_income": {
+        "base_amounts": [10000, 50000, 150000, 500000],
+        "variations": ["operating_income", "guaranteed_payments", "special_allocations"],
+        "tax_implications": {
+          "pass_through_income": true,
+          "basis_adjustments": true,
+          "section_199A_eligible": true
+        }
+      }
+    },
+    "investment_income": {
+      "dividends": {
+        "qualified_dividends": {
+          "base_amounts": [500, 2000, 8000, 25000, 100000],
+          "tax_implications": {
+            "preferential_rates": true,
+            "holding_period_requirements": true
+          }
+        },
+        "ordinary_dividends": {
+          "base_amounts": [200, 1000, 5000, 15000],
+          "tax_implications": {
+            "ordinary_income_rates": true
+          }
+        }
+      },
+      "capital_gains": {
+        "short_term": {
+          "base_amounts": [1000, 5000, 15000, 50000],
+          "tax_implications": {
+            "ordinary_income_rates": true,
+            "holding_period_one_year_or_less": true
+          }
+        },
+        "long_term": {
+          "base_amounts": [2000, 10000, 30000, 100000, 500000],
+          "tax_implications": {
+            "preferential_rates": true,
+            "net_investment_income_tax": true
+          }
+        }
+      },
+      "interest_income": {
+        "taxable_interest": {
+          "base_amounts": [100, 500, 2000, 10000, 50000],
+          "variations": ["bank_interest", "bond_interest", "cd_interest"],
+          "tax_implications": {
+            "ordinary_income": true,
+            "state_tax_variations": true
+          }
+        },
+        "tax_exempt_interest": {
+          "base_amounts": [500, 2000, 8000, 25000],
+          "variations": ["municipal_bonds", "private_activity_bonds"],
+          "tax_implications": {
+            "federal_exempt": true,
+            "amt_preference_item": true,
+            "state_tax_variations": true
+          }
+        }
+      }
+    },
+    "retirement_income": {
+      "pension_distributions": {
+        "base_amounts": [12000, 24000, 48000, 96000],
+        "variations": ["defined_benefit", "defined_contribution", "government_pension"],
+        "tax_implications": {
+          "ordinary_income": true,
+          "withholding_options": true
+        }
+      },
+      "ira_distributions": {
+        "traditional_ira": {
+          "base_amounts": [5000, 15000, 30000, 75000],
+          "tax_implications": {
+            "ordinary_income": true,
+            "early_withdrawal_penalties": true,
+            "required_minimum_distributions": true
+          }
+        },
+        "roth_ira": {
+          "base_amounts": [3000, 10000, 25000],
+          "tax_implications": {
+            "tax_free_qualified": true,
+            "contribution_ordering": true,
+            "five_year_rules": true
+          }
+        }
+      },
+      "social_security": {
+        "base_amounts": [15000, 25000, 35000],
+        "tax_implications": {
+          "provisional_income_calculation": true,
+          "taxation_thresholds": true
+        }
+      }
+    }
+  },
+  "deduction_events": {
+    "business_deductions": {
+      "office_expenses": {
+        "home_office": {
+          "base_amounts": [1200, 3000, 6000, 12000],
+          "variations": ["simplified_method", "actual_expense_method"],
+          "tax_implications": {
+            "regular_exclusive_use": true,
+            "principal_place_of_business": true,
+            "depreciation_recapture": true
+          }
+        },
+        "office_supplies": {
+          "base_amounts": [500, 1500, 4000, 8000],
+          "variations": ["computer_equipment", "software", "furniture"],
+          "tax_implications": {
+            "current_deduction": true,
+            "capitalization_thresholds": true
+          }
+        }
+      },
+      "travel_expenses": {
+        "business_travel": {
+          "base_amounts": [2000, 8000, 20000, 50000],
+          "variations": ["domestic_travel", "international_travel", "local_transportation"],
+          "tax_implications": {
+            "business_purpose_required": true,
+            "substantiation_requirements": true,
+            "per_diem_limitations": true
+          }
+        },
+        "meals_entertainment": {
+          "base_amounts": [1000, 4000, 12000, 30000],
+          "variations": ["business_meals", "client_entertainment", "employee_meals"],
+          "tax_implications": {
+            "fifty_percent_limitation": true,
+            "business_relationship": true,
+            "substantiation_requirements": true
+          }
+        }
+      },
+      "professional_expenses": {
+        "continuing_education": {
+          "base_amounts": [500, 2000, 5000, 15000],
+          "variations": ["conferences", "certifications", "degree_programs"],
+          "tax_implications": {
+            "job_related_requirement": true,
+            "education_credits_comparison": true
+          }
+        },
+        "professional_dues": {
+          "base_amounts": [200, 800, 2000, 5000],
+          "variations": ["bar_association", "medical_society", "trade_associations"],
+          "tax_implications": {
+            "ordinary_necessary": true,
+            "professional_requirement": true
+          }
+        }
+      }
+    },
+    "personal_deductions": {
+      "mortgage_interest": {
+        "qualified_residence": {
+          "base_amounts": [8000, 15000, 30000, 50000],
+          "variations": ["primary_residence", "second_home", "home_equity"],
+          "tax_implications": {
+            "acquisition_debt_limits": true,
+            "home_equity_limitations": true,
+            "points_deduction": true
+          }
+        }
+      },
+      "state_local_taxes": {
+        "property_tax": {
+          "base_amounts": [3000, 8000, 15000, 25000],
+          "tax_implications": {
+            "salt_cap_limitation": true,
+            "assessment_timing": true
+          }
+        },
+        "state_income_tax": {
+          "base_amounts": [2000, 6000, 12000, 25000],
+          "tax_implications": {
+            "salt_cap_limitation": true,
+            "estimated_payments": true
+          }
+        }
+      },
+      "charitable_contributions": {
+        "cash_contributions": {
+          "base_amounts": [500, 2000, 8000, 25000, 100000],
+          "variations": ["religious_organizations", "educational_institutions", "charitable_organizations"],
+          "tax_implications": {
+            "agi_limitations": true,
+            "substantiation_requirements": true,
+            "carryforward_provisions": true
+          }
+        },
+        "property_contributions": {
+          "base_amounts": [1000, 5000, 15000, 50000],
+          "variations": ["clothing", "household_items", "vehicles", "real_estate"],
+          "tax_implications": {
+            "fair_market_value": true,
+            "appraisal_requirements": true,
+            "special_limitations": true
+          }
+        }
+      },
+      "medical_expenses": {
+        "medical_dental": {
+          "base_amounts": [2000, 8000, 20000, 50000],
+          "variations": ["insurance_premiums", "prescription_drugs", "medical_procedures"],
+          "tax_implications": {
+            "agi_threshold": true,
+            "qualified_expenses": true
+          }
+        }
+      }
+    }
+  },
+  "credit_events": {
+    "refundable_credits": {
+      "child_tax_credit": {
+        "base_amounts": [2000, 3000, 4000],
+        "variations": ["qualifying_child", "dependent_care", "additional_child"],
+        "tax_implications": {
+          "refundable_portion": true,
+          "income_limitations": true,
+          "qualifying_child_tests": true
+        }
+      },
+      "earned_income_credit": {
+        "base_amounts": [500, 3000, 6000],
+        "variations": ["no_children", "one_child", "two_children", "three_plus_children"],
+        "tax_implications": {
+          "income_limitations": true,
+          "earned_income_requirements": true,
+          "investment_income_limits": true
+        }
+      }
+    },
+    "nonrefundable_credits": {
+      "education_credits": {
+        "american_opportunity": {
+          "base_amounts": [1000, 2000, 2500],
+          "tax_implications": {
+            "four_year_limitation": true,
+            "qualified_expenses": true,
+            "income_limitations": true
+          }
+        },
+        "lifetime_learning": {
+          "base_amounts": [500, 1500, 2000],
+          "tax_implications": {
+            "unlimited_years": true,
+            "per_taxpayer_limitation": true,
+            "income_limitations": true
+          }
+        }
+      },
+      "retirement_savings": {
+        "savers_credit": {
+          "base_amounts": [200, 500, 1000],
+          "tax_implications": {
+            "agi_limitations": true,
+            "contribution_requirements": true,
+            "nonrefundable": true
+          }
+        }
+      }
+    }
+  },
+  "penalty_events": {
+    "underpayment_penalties": {
+      "estimated_tax": {
+        "base_amounts": [100, 500, 2000, 8000],
+        "variations": ["insufficient_payments", "late_payments", "underpayment_reasons"],
+        "tax_implications": {
+          "safe_harbor_rules": true,
+          "annualized_income": true,
+          "waiver_provisions": true
+        }
+      }
+    },
+    "early_withdrawal_penalties": {
+      "retirement_accounts": {
+        "base_amounts": [500, 2000, 7500],
+        "variations": ["ira_early_withdrawal", "401k_hardship", "529_non_qualified"],
+        "tax_implications": {
+          "ten_percent_penalty": true,
+          "exceptions_available": true,
+          "ordinary_income_treatment": true
+        }
+      }
+    }
+  }
+}

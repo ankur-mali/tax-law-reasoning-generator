@@ -1,0 +1,212 @@
+{
+  "individual": {
+    "base_attributes": ["age", "income_level", "filing_status", "dependents", "profession", "state_residence"],
+    "income_ranges": {
+      "low": {"min": 0, "max": 50000, "typical": [25000, 35000, 45000]},
+      "medium": {"min": 50001, "max": 150000, "typical": [75000, 100000, 125000]},
+      "high": {"min": 150001, "max": 500000, "typical": [200000, 300000, 400000]},
+      "ultra_high": {"min": 500001, "max": 2000000, "typical": [750000, 1000000, 1500000]}
+    },
+    "profession_templates": {
+      "software_engineer": {
+        "income_level": ["medium", "high"],
+        "typical_deductions": ["home_office", "computer_equipment", "professional_development"],
+        "likely_events": ["stock_options", "bonus", "remote_work_expenses"],
+        "complexity_factors": ["RSU_vesting", "ISO_exercises", "contractor_income"]
+      },
+      "physician": {
+        "income_level": ["high", "ultra_high"],
+        "typical_deductions": ["medical_equipment", "continuing_education", "malpractice_insurance"],
+        "likely_events": ["practice_income", "hospital_employment", "medical_investments"],
+        "complexity_factors": ["practice_ownership", "medical_partnerships", "equipment_depreciation"]
+      },
+      "teacher": {
+        "income_level": ["low", "medium"],
+        "typical_deductions": ["classroom_supplies", "continuing_education", "union_dues"],
+        "likely_events": ["salary", "summer_tutoring", "educational_grants"],
+        "complexity_factors": ["pension_contributions", "educator_credits", "multiple_districts"]
+      },
+      "consultant": {
+        "income_level": ["medium", "high"],
+        "typical_deductions": ["travel_expenses", "home_office", "business_meals"],
+        "likely_events": ["consulting_fees", "project_bonuses", "client_gifts"],
+        "complexity_factors": ["multi_state_work", "international_clients", "expense_reimbursements"]
+      },
+      "retiree": {
+        "income_level": ["low", "medium"],
+        "typical_deductions": ["medical_expenses", "charitable_contributions"],
+        "likely_events": ["pension_income", "social_security", "401k_distributions"],
+        "complexity_factors": ["RMD_requirements", "medicare_premiums", "investment_income"]
+      }
+    },
+    "filing_status_templates": {
+      "single": {
+        "dependents_range": [0, 1],
+        "common_scenarios": ["young_professional", "single_parent", "recent_graduate"],
+        "typical_complications": ["student_loans", "rental_property", "freelance_income"]
+      },
+      "married_filing_jointly": {
+        "dependents_range": [0, 4],
+        "common_scenarios": ["dual_income", "single_earner", "blended_family"],
+        "typical_complications": ["spousal_IRA", "dependent_care", "education_credits"]
+      },
+      "married_filing_separately": {
+        "dependents_range": [0, 2],
+        "common_scenarios": ["separate_businesses", "student_loan_strategies", "liability_separation"],
+        "typical_complications": ["itemized_deductions", "spousal_limitations", "alternative_calculations"]
+      },
+      "head_of_household": {
+        "dependents_range": [1, 3],
+        "common_scenarios": ["single_parent", "supporting_relatives", "divorced_parent"],
+        "typical_complications": ["dependent_support", "childcare_expenses", "custody_arrangements"]
+      }
+    },
+    "state_residence_templates": {
+      "california": {
+        "state_tax_rate": 0.13,
+        "special_deductions": ["state_disability", "ca_mortgage_interest"],
+        "complexity_factors": ["high_income_surcharge", "ca_conformity_adjustments"]
+      },
+      "texas": {
+        "state_tax_rate": 0.0,
+        "special_deductions": ["property_tax"],
+        "complexity_factors": ["no_state_income_tax", "property_tax_limitations"]
+      },
+      "new_york": {
+        "state_tax_rate": 0.109,
+        "special_deductions": ["ny_state_local_tax", "mta_tax"],
+        "complexity_factors": ["city_tax", "nonresident_allocation"]
+      },
+      "florida": {
+        "state_tax_rate": 0.0,
+        "special_deductions": ["property_tax", "intangible_personal_property"],
+        "complexity_factors": ["no_state_income_tax", "tourist_development_tax"]
+      }
+    },
+    "complexity_modifiers": {
+      "basic": {
+        "max_income_sources": 2,
+        "max_deduction_types": 3,
+        "special_situations": ["standard_deduction_only"]
+      },
+      "intermediate": {
+        "max_income_sources": 4,
+        "max_deduction_types": 6,
+        "special_situations": ["itemized_deductions", "multiple_w2s", "investment_income"]
+      },
+      "advanced": {
+        "max_income_sources": 8,
+        "max_deduction_types": 10,
+        "special_situations": ["rental_property", "business_income", "foreign_income"]
+      },
+      "expert": {
+        "max_income_sources": 15,
+        "max_deduction_types": 15,
+        "special_situations": ["partnerships", "trusts", "international_transactions", "complex_investments"]
+      }
+    }
+  },
+  "corporation": {
+    "base_attributes": ["industry", "revenue", "employees", "structure_type", "formation_state", "business_years"],
+    "revenue_ranges": {
+      "small": {"min": 0, "max": 1000000, "typical": [250000, 500000, 750000]},
+      "medium": {"min": 1000001, "max": 50000000, "typical": [5000000, 25000000, 40000000]},
+      "large": {"min": 50000001, "max": 1000000000, "typical": [100000000, 500000000, 800000000]},
+      "enterprise": {"min": 1000000001, "max": 50000000000, "typical": [5000000000, 25000000000, 40000000000]}
+    },
+    "industry_templates": {
+      "technology": {
+        "revenue_level": ["medium", "large", "enterprise"],
+        "typical_deductions": ["R&D_expenses", "software_licenses", "employee_stock_options"],
+        "likely_events": ["software_sales", "licensing_revenue", "acquisition_costs"],
+        "complexity_factors": ["intellectual_property", "international_operations", "stock_compensation"]
+      },
+      "manufacturing": {
+        "revenue_level": ["small", "medium", "large"],
+        "typical_deductions": ["equipment_depreciation", "raw_materials", "factory_overhead"],
+        "likely_events": ["product_sales", "equipment_purchases", "facility_costs"],
+        "complexity_factors": ["inventory_valuation", "section_199A", "equipment_financing"]
+      },
+      "professional_services": {
+        "revenue_level": ["small", "medium"],
+        "typical_deductions": ["professional_liability", "continuing_education", "office_expenses"],
+        "likely_events": ["service_fees", "client_retainers", "partnership_distributions"],
+        "complexity_factors": ["personal_service_corporation", "professional_licensing", "liability_limitations"]
+      },
+      "retail": {
+        "revenue_level": ["small", "medium", "large"],
+        "typical_deductions": ["inventory_costs", "store_rent", "employee_wages"],
+        "likely_events": ["retail_sales", "inventory_purchases", "seasonal_fluctuations"],
+        "complexity_factors": ["inventory_methods", "sales_tax_compliance", "franchise_relationships"]
+      },
+      "real_estate": {
+        "revenue_level": ["small", "medium", "large"],
+        "typical_deductions": ["property_depreciation", "maintenance_costs", "property_management"],
+        "likely_events": ["rental_income", "property_sales", "improvement_costs"],
+        "complexity_factors": ["like_kind_exchanges", "passive_activity_rules", "depreciation_recapture"]
+      }
+    },
+    "structure_templates": {
+      "c_corporation": {
+        "tax_characteristics": ["double_taxation", "corporate_rates", "dividend_treatment"],
+        "typical_complications": ["accumulated_earnings", "personal_holding_company", "alternative_minimum_tax"],
+        "planning_opportunities": ["income_splitting", "fringe_benefits", "charitable_contributions"]
+      },
+      "s_corporation": {
+        "tax_characteristics": ["pass_through", "shareholder_basis", "built_in_gains"],
+        "typical_complications": ["basis_limitations", "distribution_ordering", "passive_income_limits"],
+        "planning_opportunities": ["payroll_tax_savings", "loss_utilization", "tax_free_distributions"]
+      },
+      "partnership": {
+        "tax_characteristics": ["pass_through", "partner_basis", "distributive_shares"],
+        "typical_complications": ["basis_adjustments", "allocation_requirements", "partnership_debt"],
+        "planning_opportunities": ["special_allocations", "contributed_property", "liquidating_distributions"]
+      },
+      "llc": {
+        "tax_characteristics": ["flexible_elections", "member_basis", "operating_agreements"],
+        "typical_complications": ["check_the_box", "self_employment_tax", "state_variations"],
+        "planning_opportunities": ["tax_election_flexibility", "liability_protection", "management_structure"]
+      }
+    }
+  },
+  "partnership": {
+    "base_attributes": ["partner_count", "partnership_type", "industry", "revenue_split", "management_structure"],
+    "partnership_types": {
+      "general_partnership": {
+        "characteristics": ["unlimited_liability", "management_participation", "pass_through_taxation"],
+        "typical_partners": ["individuals", "other_partnerships"],
+        "complexity_factors": ["joint_and_several_liability", "partnership_agreements", "basis_calculations"]
+      },
+      "limited_partnership": {
+        "characteristics": ["general_partners", "limited_partners", "investment_focus"],
+        "typical_partners": ["institutional_investors", "high_net_worth_individuals"],
+        "complexity_factors": ["carried_interest", "capital_commitments", "distribution_waterfalls"]
+      },
+      "family_partnership": {
+        "characteristics": ["family_members", "estate_planning", "gift_tax_considerations"],
+        "typical_partners": ["parents", "children", "grandchildren", "family_trusts"],
+        "complexity_factors": ["valuation_discounts", "gift_tax_returns", "generation_skipping"]
+      }
+    }
+  },
+  "trust": {
+    "base_attributes": ["trust_type", "beneficiaries", "assets", "distribution_requirements", "tax_year"],
+    "trust_types": {
+      "revocable_trust": {
+        "characteristics": ["grantor_trust", "estate_planning", "avoid_probate"],
+        "tax_treatment": ["grantor_taxed", "no_separate_return"],
+        "complexity_factors": ["funding_issues", "state_law_variations"]
+      },
+      "irrevocable_trust": {
+        "characteristics": ["separate_taxpayer", "asset_protection", "tax_planning"],
+        "tax_treatment": ["trust_taxed", "separate_return_required"],
+        "complexity_factors": ["distribution_deduction", "throwback_rules", "generation_skipping"]
+      },
+      "charitable_trust": {
+        "characteristics": ["charitable_beneficiary", "tax_exemption", "charitable_deduction"],
+        "tax_treatment": ["exempt_income", "unrelated_business_income"],
+        "complexity_factors": ["private_foundation_rules", "excise_taxes", "distribution_requirements"]
+      }
+    }
+  }
+}

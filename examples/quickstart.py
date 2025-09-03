@@ -12,11 +12,25 @@ from typing import Dict, Any
 import argparse
 import sys
 
-from src.tax_law_generator.ai_integration import *
-from src.tax_law_generator.tax_law_generator import *
-from src.tax_law_generator.config_evaluation import  *
-# from src.utils.data_structures import SomeDataClass
+import pandas as pd
+from dotenv import load_dotenv
+load_dotenv()
 
+# from src.tax_law_generator.ai_integration import *
+# from src.tax_law_generator.tax_law_generator import *
+# from src.tax_law_generator.config_evaluation import  *
+# from src.utils.data_structures import SomeDataClass
+from src.tax_law_generator import (
+    TaxLawCaseGenerator,
+    ComplexityLevel,
+    TaxLawCase,
+    GenerativeAIIntegration,
+    AIConfig,
+    EnhancedTaxLawCaseGenerator,
+    GenerationConfig,
+    CaseEvaluator,
+    DatasetGenerator
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -148,7 +162,7 @@ def quick_start_demo(api_key: str):
         }
     }
 
-    output_path = Path("demo_dataset/ai_enhanced_case.json")
+    output_path = Path("output/ai_enhanced_case.json")
     output_path.parent.mkdir(exist_ok=True)
 
     with open(output_path, 'w') as f:
@@ -267,7 +281,9 @@ def advanced_ai_example(api_key: str):
         }
     }
 
-    export_path = Path("demo_dataset/expert_case_comprehensive.json")
+    export_path = Path("output/expert_case_comprehensive.json")
+    export_path.parent.mkdir(exist_ok=True)
+
     with open(export_path, 'w') as f:
         json.dump(comprehensive_export, f, indent=2)
 
@@ -275,7 +291,7 @@ def advanced_ai_example(api_key: str):
     print("\n=== Advanced AI Example Complete! ===")
 
 
-def generate_ai_dataset(api_key: str, config_file: str = None, num_cases: int = 10, output_dir: str = "ai_dataset"):
+def generate_ai_dataset(api_key: str, config_file: str = None, num_cases: int = 10, output_dir: str = "output/ai_dataset"):
     """
     Generate a complete dataset using AI enhancement
     """
@@ -308,7 +324,7 @@ def generate_ai_dataset(api_key: str, config_file: str = None, num_cases: int = 
     print("Generating AI-enhanced cases...")
 
     output_path = Path(output_dir)
-    output_path.mkdir(exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
 
     cases_data = []
     validation_results = []
@@ -428,14 +444,14 @@ def create_cli():
     generate_parser = subparsers.add_parser('generate', help='Generate single AI-enhanced case')
     generate_parser.add_argument('--complexity', choices=['basic', 'intermediate', 'advanced', 'expert'],
                                  default='intermediate', help='Case complexity level')
-    generate_parser.add_argument('--output', default='ai_generated_case.json', help='Output file path')
+    generate_parser.add_argument('--output', default='output/ai_generated_case.json', help='Output file path')
     generate_parser.add_argument('--api-key', help='OpenAI API key (or set OPENAI_API_KEY env var)')
 
     # Generate dataset command
     dataset_parser = subparsers.add_parser('dataset', help='Generate AI-enhanced dataset')
     dataset_parser.add_argument('--num-cases', type=int, default=10, help='Number of cases to generate')
     dataset_parser.add_argument('--config', help='Configuration file path')
-    dataset_parser.add_argument('--output-dir', default='ai_generated_dataset', help='Output directory')
+    dataset_parser.add_argument('--output-dir', default='output/ai_generated_dataset', help='Output directory')
     dataset_parser.add_argument('--api-key', help='OpenAI API key (or set OPENAI_API_KEY env var)')
 
     return parser
@@ -496,7 +512,11 @@ def main():
             'ai_complexity_assessment': complexity_assessment
         }
 
-        with open(args.output, 'w') as f:
+        # Ensure output directory exists
+        output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(output_path, 'w') as f:
             json.dump(case_dict, f, indent=2)
 
         print(f"AI-enhanced case generated and saved to: {args.output}")

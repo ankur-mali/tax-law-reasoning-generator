@@ -13,6 +13,8 @@ from abc import ABC, abstractmethod
 import time
 import os
 
+from openai import OpenAI
+import openai
 # Import from main modules
 from .tax_law_generator import TaxLawCase, ReasoningStepData, ReasoningStep
 
@@ -63,7 +65,8 @@ class OpenAIProvider(AIProvider):
             raise ValueError(
                 "OpenAI API key not provided. Set OPENAI_API_KEY environment variable or pass api_key in config")
 
-        openai.api_key = api_key
+        # Initialize OpenAI client (v1.0.0+ style)
+        self.client = OpenAI(api_key=api_key)
         logger.info(f"Initialized OpenAI provider with model: {config.model}")
 
     def generate_text(self, prompt: str, **kwargs) -> str:
@@ -75,7 +78,8 @@ class OpenAIProvider(AIProvider):
 
         for attempt in range(self.config.max_retries):
             try:
-                response = openai.ChatCompletion.create(
+                # Updated API call for v1.0.0+
+                response = self.client.chat.completions.create(
                     model=self.config.model,
                     messages=[{"role": "user", "content": prompt}],
                     temperature=temperature,
@@ -84,13 +88,18 @@ class OpenAIProvider(AIProvider):
 
                 return response.choices[0].message.content.strip()
 
-            except openai.error.RateLimitError:
+            except openai.RateLimitError as e:
                 wait_time = self.config.retry_delay * (2 ** attempt)
                 logger.warning(
                     f"Rate limit hit. Waiting {wait_time}s before retry {attempt + 1}/{self.config.max_retries}")
                 time.sleep(wait_time)
 
-            except openai.error.APIError as e:
+            except openai.APIConnectionError as e:
+                logger.error(f"OpenAI connection error on attempt {attempt + 1}: {e}")
+                if attempt == self.config.max_retries - 1:
+                    raise
+                time.sleep(self.config.retry_delay)
+            except openai.APIError as e:
                 logger.error(f"OpenAI API error on attempt {attempt + 1}: {e}")
                 if attempt == self.config.max_retries - 1:
                     raise
@@ -107,6 +116,7 @@ class OpenAIProvider(AIProvider):
     def validate_response(self, response: str) -> bool:
         """Validate OpenAI response format"""
         return bool(response and len(response.strip()) > 0)
+
 
 
 class GenerativeAIIntegration:
@@ -576,3 +586,5 @@ def setup_enhanced_generator(base_generator, openai_api_key: str = None):
 
     ai_integration = create_openai_integration(api_key=openai_api_key)
     return EnhancedTaxLawCaseGenerator(base_generator, ai_integration)
+
+
