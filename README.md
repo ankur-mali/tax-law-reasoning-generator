@@ -58,8 +58,8 @@ tax_law_reasoning_generator/
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd tax_law_reasoning_generator
+git clone https://github.com/ankur-mali/tax-law-reasoning-generator
+cd tax-law-reasoning-generator
 
 # Install dependencies
 pip install -r requirements.txt
