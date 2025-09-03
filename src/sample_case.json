@@ -1,0 +1,79 @@
+{
+  "case_info": {
+    "case_id": "f927ea0d-7717-4d1a-a9c8-fda5b4651428",
+    "title": "Tax Case f927ea0d",
+    "complexity": "intermediate"
+  },
+  "narrative": "Consider the following tax scenario: Tax Case f927ea0d Individual_819b1e51 is a 33-year-old married_joint with 4 dependents. Individual_3f0f8b7a is a 42-year-old head_of_household with 1 dependents. Individual_819b1e51 and Individual_3f0f8b7a had capital gain of $52,794.05. Individual_3f0f8b7a had business expense of $8,390.43. Individual_3f0f8b7a had bonus of $23,160.10. Individual_819b1e51 and Individual_3f0f8b7a had medical expense of $8,103.15. Given this information, determine the correct tax treatment and calculate any applicable tax liability.",
+  "entities": [
+    {
+      "name": "Individual_819b1e51",
+      "type": "individual",
+      "attributes": {
+        "age": 33,
+        "income_level": "medium",
+        "filing_status": "married_joint",
+        "dependents": 4
+      }
+    },
+    {
+      "name": "Individual_3f0f8b7a",
+      "type": "individual",
+      "attributes": {
+        "age": 42,
+        "income_level": "low",
+        "filing_status": "head_of_household",
+        "dependents": 1
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "capital_gain",
+      "amount": 52794.05,
+      "description": "Generated capital_gain event"
+    },
+    {
+      "type": "business_expense",
+      "amount": 8390.43,
+      "description": "Generated business_expense event"
+    },
+    {
+      "type": "bonus",
+      "amount": 23160.1,
+      "description": "Generated bonus event"
+    },
+    {
+      "type": "medical_expense",
+      "amount": 8103.15,
+      "description": "Generated medical_expense event"
+    }
+  ],
+  "reasoning_chain": [
+    {
+      "step": 1,
+      "type": "fact_identification",
+      "description": "Identify relevant tax facts from the scenario",
+      "reasoning": "From the scenario, I identify the following tax-relevant facts: capital_gain: $52794.05, business_expense: $8390.43, bonus: $23160.1, medical_expense: $8103.15"
+    },
+    {
+      "step": 2,
+      "type": "rule_application",
+      "description": "Apply relevant tax rules to the identified facts",
+      "reasoning": "Applying IRC Section 61 for income recognition and IRC Section 162 for business deductions."
+    },
+    {
+      "step": 3,
+      "type": "calculation",
+      "description": "Calculate tax liability based on applied rules",
+      "reasoning": "Total income: $0, Total deductions: $0, Taxable income: $0"
+    },
+    {
+      "step": 4,
+      "type": "conclusion",
+      "description": "Draw final conclusion about tax treatment",
+      "reasoning": "Based on the calculations and rule applications, the final tax liability has been determined."
+    }
+  ],
+  "ground_truth": "The taxable income is $0.00 and the estimated tax liability is $0.00."
+}

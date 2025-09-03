@@ -1,0 +1,19 @@
+{
+  "complexity_distribution": {
+    "basic": 0.5,
+    "intermediate": 0.3,
+    "advanced": 0.2
+  },
+  "min_entities_per_case": 1,
+  "max_entities_per_case": 2,
+  "min_events_per_case": 2,
+  "max_events_per_case": 4,
+  "tax_year": "2024",
+  "jurisdiction": "US_Federal",
+  "narrative_length_target": 400,
+  "include_distractors": false,
+  "min_reasoning_steps": 3,
+  "max_reasoning_steps": 6,
+  "output_format": "json",
+  "include_metadata": true
+}
