@@ -6,6 +6,7 @@ This module generates synthetic tax law cases for evaluating GenAI reasoning cap
 """
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 from enum import Enum
 import json
@@ -95,11 +96,36 @@ class BaseGenerator(ABC):
 
 
 class EntityGenerator(BaseGenerator):
-    """Generates synthetic tax entities"""
 
-    def __init__(self, config: Dict[str, Any] = None):
+    """Generates synthetic tax entities using external JSON templates"""
+
+    def __init__(self, config: Dict[str, Any] = None, templates_dir: str = None):
         super().__init__(config)
-        self.entity_templates = {
+
+        # Default to templates folder within project structure if not provided
+        if templates_dir is None:
+            templates_dir = Path(__file__).parent.parent / 'configs' / 'templates'
+
+        self.entity_templates = self._load_entity_templates(templates_dir)
+
+    def _load_entity_templates(self, templates_dir) -> Dict[str, Any]:
+        """Load entity templates from external JSON file"""
+        templates_path = Path(templates_dir) / 'entity_templates.json'
+
+        try:
+            with open(templates_path, 'r', encoding='utf-8') as f:
+                templates = json.load(f)
+            return templates
+        except FileNotFoundError:
+            # Fallback to basic templates if file doesn't exist
+            print(f"Warning: Template file not found at {templates_path}. Using basic templates.")
+            return self._get_fallback_templates()
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in templates file {templates_path}: {e}")
+
+    def _get_fallback_templates(self) -> Dict[str, Any]:
+        """Fallback templates in case the JSON file is not available"""
+        return {
             "individual": {
                 "attributes": ["age", "income_level", "filing_status", "dependents"],
                 "income_ranges": {"low": (0, 50000), "medium": (50001, 150000), "high": (150001, 500000)}
@@ -111,12 +137,13 @@ class EntityGenerator(BaseGenerator):
             }
         }
 
+    # Rest of your existing methods remain unchanged
     def generate(self, entity_type: str = "individual", **kwargs) -> TaxEntity:
-        """Generate a tax entity"""
+        """Generate a tax entity using loaded templates"""
         entity_id = str(uuid.uuid4())
         name = f"{entity_type.capitalize()}_{entity_id[:8]}"
 
-        # Generate realistic attributes based on entity type
+        # Generate realistic attributes based on loaded templates
         attributes = self._generate_attributes(entity_type)
 
         return TaxEntity(
@@ -127,23 +154,65 @@ class EntityGenerator(BaseGenerator):
         )
 
     def _generate_attributes(self, entity_type: str) -> Dict[str, Any]:
-        """Generate attributes specific to entity type"""
+        """Generate attributes specific to entity type using loaded templates"""
         import random
 
+        # Now uses loaded templates instead of hardcoded ones
         template = self.entity_templates.get(entity_type, {})
         attributes = {}
 
         if entity_type == "individual":
+            # Use profession templates if available in the loaded JSON
+            profession_templates = template.get("profession_templates", {})
+            if profession_templates:
+                profession = random.choice(list(profession_templates.keys()))
+                prof_template = profession_templates[profession]
+
+                attributes.update({
+                    "profession": profession,
+                    "income_level": random.choice(prof_template.get("income_level", ["medium"])),
+                    "typical_deductions": prof_template.get("typical_deductions", []),
+                    "complexity_factors": prof_template.get("complexity_factors", [])
+                })
+
+            # Add other individual attributes from templates
             attributes.update({
                 "age": random.randint(18, 80),
-                "income_level": random.choice(["low", "medium", "high"]),
                 "filing_status": random.choice(["single", "married_joint", "married_separate", "head_of_household"]),
                 "dependents": random.randint(0, 4)
             })
+
+            # Use state residence templates if available
+            state_templates = template.get("state_residence_templates", {})
+            if state_templates:
+                state = random.choice(list(state_templates.keys()))
+                attributes["state_residence"] = state
+                attributes["state_tax_rate"] = state_templates[state].get("state_tax_rate", 0.0)
+
         elif entity_type == "corporation":
+            # Use industry templates if available in the loaded JSON
+            industry_templates = template.get("industry_templates", {})
+            if industry_templates:
+                industry = random.choice(list(industry_templates.keys()))
+                ind_template = industry_templates[industry]
+
+                attributes.update({
+                    "industry": industry,
+                    "revenue_level": random.choice(ind_template.get("revenue_level", ["medium"])),
+                    "typical_deductions": ind_template.get("typical_deductions", []),
+                    "complexity_factors": ind_template.get("complexity_factors", [])
+                })
+
+            # Generate revenue based on loaded revenue ranges
+            revenue_ranges = template.get("revenue_ranges", {})
+            revenue_level = attributes.get("revenue_level", "medium")
+            if revenue_level in revenue_ranges:
+                revenue_range = revenue_ranges[revenue_level]
+                min_rev = revenue_range.get("min", 100000)
+                max_rev = revenue_range.get("max", 1000000)
+                attributes["revenue"] = random.randint(min_rev, max_rev)
+
             attributes.update({
-                "industry": random.choice(["technology", "manufacturing", "retail", "services"]),
-                "revenue": random.randint(100000, 10000000),
                 "employees": random.randint(1, 1000),
                 "structure_type": random.choice(["C-Corp", "S-Corp", "LLC"])
             })
@@ -152,26 +221,64 @@ class EntityGenerator(BaseGenerator):
 
 
 class EventGenerator(BaseGenerator):
-    """Generates synthetic tax events"""
+    """Generates synthetic tax events using external JSON templates"""
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: Dict[str, Any] = None, templates_dir: str = None):
         super().__init__(config)
-        self.event_templates = {
+
+        # Default to templates folder within project structure if not provided
+        if templates_dir is None:
+            templates_dir = Path(__file__).parent.parent / 'configs' / 'templates'
+
+        self.event_templates = self._load_event_templates(templates_dir)
+
+    def _load_event_templates(self, templates_dir) -> Dict[str, Any]:
+        """Load event templates from external JSON file"""
+        templates_path = Path(templates_dir) / 'event_templates.json'
+
+        try:
+            with open(templates_path, 'r', encoding='utf-8') as f:
+                templates = json.load(f)
+            return templates
+        except FileNotFoundError:
+            print(f"Warning: Event template file not found at {templates_path}. Using basic templates.")
+            return self._get_fallback_event_templates()
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in event templates file {templates_path}: {e}")
+
+    def _get_fallback_event_templates(self) -> Dict[str, Any]:
+        """Fallback event templates in case the JSON file is not available"""
+        return {
             "income": ["salary", "bonus", "dividend", "capital_gain", "rental_income"],
             "deduction": ["business_expense", "charitable_contribution", "mortgage_interest", "medical_expense"],
             "credit": ["child_tax_credit", "earned_income_credit", "education_credit"]
         }
 
     def generate(self, event_category: str = "income", entities: List[TaxEntity] = None, **kwargs) -> TaxEvent:
-        """Generate a tax event"""
+        """Generate a tax event using loaded templates"""
         import random
 
         event_id = str(uuid.uuid4())
-        event_types = self.event_templates.get(event_category, ["generic_event"])
-        event_type = random.choice(event_types)
 
-        # Generate amount based on event type
-        amount = self._generate_amount(event_type)
+        # Use loaded templates to get event types
+        income_events = self.event_templates.get("income_events", {})
+        deduction_events = self.event_templates.get("deduction_events", {})
+        credit_events = self.event_templates.get("credit_events", {})
+
+        # Select event type based on loaded templates
+        if event_category == "income" and income_events:
+            event_type = self._select_from_template_category(income_events)
+        elif event_category == "deduction" and deduction_events:
+            event_type = self._select_from_template_category(deduction_events)
+        elif event_category == "credit" and credit_events:
+            event_type = self._select_from_template_category(credit_events)
+        else:
+            # Fallback to basic templates
+            event_types = self.event_templates.get(event_category, ["generic_event"])
+            event_type = random.choice(event_types) if isinstance(event_types, list) else "generic_event"
+
+        # Generate amount using template data
+        amount = self._generate_amount_from_template(event_type, event_category)
 
         # Select involved entities
         entities_involved = []
@@ -186,13 +293,43 @@ class EventGenerator(BaseGenerator):
             date="2024-01-01",  # Simplified for now
             description=f"Generated {event_type} event",
             entities_involved=entities_involved,
-            tax_implications=self._generate_tax_implications(event_type, amount)
+            tax_implications=self._generate_tax_implications_from_template(event_type, amount)
         )
 
-    def _generate_amount(self, event_type: str) -> float:
-        """Generate realistic amounts for different event types"""
+    def _select_from_template_category(self, category_template: Dict[str, Any]) -> str:
+        """Select a specific event type from a template category"""
         import random
 
+        # If the category has subcategories (like employment_income, business_income)
+        subcategories = list(category_template.keys())
+        if subcategories:
+            subcategory = random.choice(subcategories)
+            subcategory_data = category_template[subcategory]
+
+            # If subcategory has specific event types
+            if isinstance(subcategory_data, dict):
+                specific_events = list(subcategory_data.keys())
+                return random.choice(specific_events) if specific_events else subcategory
+
+        return "generic_event"
+
+    def _generate_amount_from_template(self, event_type: str, event_category: str) -> float:
+        """Generate realistic amounts using template data"""
+        import random
+
+        # Look for specific amounts in templates
+        templates = self.event_templates.get(f"{event_category}_events", {})
+
+        # Search through nested template structure for base_amounts
+        for subcategory, subcategory_data in templates.items():
+            if isinstance(subcategory_data, dict):
+                for specific_event, event_data in subcategory_data.items():
+                    if specific_event == event_type and isinstance(event_data, dict):
+                        base_amounts = event_data.get("base_amounts", [])
+                        if base_amounts:
+                            return random.choice(base_amounts)
+
+        # Fallback to default ranges
         amount_ranges = {
             "salary": (30000, 200000),
             "bonus": (1000, 50000),
@@ -200,22 +337,39 @@ class EventGenerator(BaseGenerator):
             "capital_gain": (500, 100000),
             "business_expense": (100, 25000),
             "charitable_contribution": (50, 5000),
-            "mortgage_interest": (2000, 30000),
-            "child_tax_credit": (2000, 2000),  # Fixed amount
+            "child_tax_credit": (2000, 2000),
         }
 
         min_amt, max_amt = amount_ranges.get(event_type, (100, 10000))
         return round(random.uniform(min_amt, max_amt), 2)
 
-    def _generate_tax_implications(self, event_type: str, amount: float) -> Dict[str, Any]:
-        """Generate tax implications for the event"""
-        implications = {
+    def _generate_tax_implications_from_template(self, event_type: str, amount: float) -> Dict[str, Any]:
+        """Generate tax implications using template data"""
+
+        # Look for tax implications in loaded templates
+        templates = self.event_templates.get("income_events", {})
+        templates.update(self.event_templates.get("deduction_events", {}))
+        templates.update(self.event_templates.get("credit_events", {}))
+
+        # Search for specific tax implications in templates
+        for subcategory, subcategory_data in templates.items():
+            if isinstance(subcategory_data, dict):
+                for specific_event, event_data in subcategory_data.items():
+                    if specific_event == event_type and isinstance(event_data, dict):
+                        tax_implications = event_data.get("tax_implications", {})
+                        if tax_implications:
+                            # Use template implications and add amount-specific data
+                            implications = tax_implications.copy()
+                            implications["amount"] = amount
+                            return implications
+
+        # Fallback implications
+        return {
             "taxable_amount": amount,
-            "applicable_rate": 0.22,  # Simplified
+            "applicable_rate": 0.22,
             "deductible": "deduction" in event_type,
             "credit_eligible": "credit" in event_type
         }
-        return implications
 
 
 class NarrativeGenerator(BaseGenerator):

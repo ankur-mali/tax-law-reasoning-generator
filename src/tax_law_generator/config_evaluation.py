@@ -1,6 +1,6 @@
 """
-Configuration System and Evaluation Framework
-Extends the Tax Law Reasoning Data Generator with configuration management and evaluation capabilities
+Enhanced Configuration System and Evaluation Framework
+Loads templates from external configs/templates directory with optimized, non-redundant code
 """
 
 import json
@@ -18,12 +18,60 @@ from .tax_law_generator import TaxLawCase, ComplexityLevel, TaxLawCaseGenerator
 logger = logging.getLogger(__name__)
 
 
+# Utility functions to eliminate code duplication
+def _read_config_file(path: Path) -> Dict[str, Any]:
+    """Unified loader for JSON/YAML configuration files"""
+    if not path.exists():
+        raise FileNotFoundError(f"Configuration file not found: {path}")
+
+    with open(path, 'r', encoding='utf-8') as f:
+        if path.suffix.lower() == '.json':
+            return json.load(f)
+        elif path.suffix.lower() in ['.yml', '.yaml']:
+            return yaml.safe_load(f)
+        else:
+            raise ValueError(f"Unsupported configuration format: {path.suffix}")
+
+
+def _save_config_file(data: Dict[str, Any], path: Path):
+    """Unified saver for JSON/YAML configuration files"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(path, 'w', encoding='utf-8') as f:
+        if path.suffix.lower() == '.json':
+            json.dump(data, f, indent=2)
+        elif path.suffix.lower() in ['.yml', '.yaml']:
+            yaml.dump(data, f, default_flow_style=False)
+        else:
+            raise ValueError(f"Unsupported configuration format: {path.suffix}")
+
+
+def _get_default_config_values() -> Dict[str, Any]:
+    """Centralized default configuration values"""
+    return {
+        "complexity_distribution": {
+            "basic": 0.3,
+            "intermediate": 0.4,
+            "advanced": 0.2,
+            "expert": 0.1
+        },
+        "applicable_tax_codes": [
+            "IRC_61",   # Gross Income
+            "IRC_162",  # Business Deductions
+            "IRC_163",  # Interest Deduction
+            "IRC_164",  # State and Local Taxes
+            "IRC_165",  # Losses
+            "IRC_170",  # Charitable Contributions
+        ]
+    }
+
+
 @dataclass
 class GenerationConfig:
-    """Configuration for case generation"""
+    """Configuration for case generation with external template loading"""
 
     # Generation parameters
-    complexity_distribution: Dict[str, float] = None  # Distribution of complexity levels
+    complexity_distribution: Dict[str, float] = None
     min_entities_per_case: int = 1
     max_entities_per_case: int = 4
     min_events_per_case: int = 2
@@ -35,9 +83,9 @@ class GenerationConfig:
     applicable_tax_codes: List[str] = None
 
     # Narrative generation parameters
-    narrative_length_target: int = 500  # Target words
-    include_distractors: bool = True  # Include irrelevant information
-    formality_level: str = "professional"  # casual, professional, legal
+    narrative_length_target: int = 500
+    include_distractors: bool = True
+    formality_level: str = "professional"
 
     # Reasoning chain parameters
     min_reasoning_steps: int = 3
@@ -46,72 +94,95 @@ class GenerationConfig:
     show_confidence_scores: bool = False
 
     # Output parameters
-    output_format: str = "json"  # json, yaml, csv
+    output_format: str = "json"
     include_metadata: bool = True
 
     def __post_init__(self):
-        # Set defaults
+        """Set defaults using centralized default values"""
+        defaults = _get_default_config_values()
+
         if self.complexity_distribution is None:
-            self.complexity_distribution = {
-                "basic": 0.3,
-                "intermediate": 0.4,
-                "advanced": 0.2,
-                "expert": 0.1
-            }
+            self.complexity_distribution = defaults["complexity_distribution"]
 
         if self.applicable_tax_codes is None:
-            self.applicable_tax_codes = [
-                "IRC_61",  # Gross Income
-                "IRC_162",  # Business Deductions
-                "IRC_163",  # Interest Deduction
-                "IRC_164",  # State and Local Taxes
-                "IRC_165",  # Losses
-                "IRC_170",  # Charitable Contributions
-            ]
+            self.applicable_tax_codes = defaults["applicable_tax_codes"]
 
 
 class ConfigManager:
-    """Manages configuration loading and validation"""
+    """Enhanced configuration manager with template directory support"""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: Optional[str] = None, templates_dir: Optional[str] = None):
         self.config_path = Path(config_path) if config_path else None
+        self.templates_dir = Path(templates_dir) if templates_dir else Path(__file__).parent.parent / 'configs' / 'templates'
         self.config = GenerationConfig()
 
-    def load_config(self, config_path: str) -> GenerationConfig:
-        """Load configuration from file"""
-        path = Path(config_path)
+    def load_config(self, config_path: Optional[str] = None) -> GenerationConfig:
+        """Load configuration from file with template directory fallback"""
+        # Determine config file path
+        if config_path:
+            path = Path(config_path)
+        elif self.config_path:
+            path = self.config_path
+        else:
+            # Try templates directory first
+            path = self.templates_dir / "basic_config.json"
+            if not path.exists():
+                path = self.templates_dir / "advanced_config.json"
 
         if not path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {config_path}")
+            logger.warning(f"Config file {path} not found, using defaults")
+            self.config = GenerationConfig()
+            return self.config
 
-        if path.suffix.lower() == '.json':
-            with open(path, 'r') as f:
-                config_dict = json.load(f)
-        elif path.suffix.lower() in ['.yml', '.yaml']:
-            with open(path, 'r') as f:
-                config_dict = yaml.safe_load(f)
+        try:
+            config_dict = _read_config_file(path)
+            self.config = GenerationConfig(**config_dict)
+            logger.info(f"Loaded configuration from {path}")
+            return self.config
+        except Exception as e:
+            logger.error(f"Error loading config from {path}: {e}")
+            self.config = GenerationConfig()
+            return self.config
+
+    def save_config(self, config: GenerationConfig, save_path: Optional[str] = None):
+        """Save configuration to file with smart path resolution"""
+        if save_path:
+            path = Path(save_path)
         else:
-            raise ValueError(f"Unsupported configuration format: {path.suffix}")
+            # Default to templates directory
+            path = self.templates_dir / "generated_config.json"
 
-        # Convert dict to GenerationConfig
-        self.config = GenerationConfig(**config_dict)
-        return self.config
+        try:
+            _save_config_file(asdict(config), path)
+            logger.info(f"Configuration saved to {path}")
+        except Exception as e:
+            logger.error(f"Error saving config to {path}: {e}")
+            raise
 
-    def save_config(self, config: GenerationConfig, save_path: str):
-        """Save configuration to file"""
-        path = Path(save_path)
-        config_dict = asdict(config)
+    def load_template_config(self, template_name: str) -> GenerationConfig:
+        """Load a specific template configuration by name"""
+        template_path = self.templates_dir / f"{template_name}_config.json"
 
-        if path.suffix.lower() == '.json':
-            with open(path, 'w') as f:
-                json.dump(config_dict, f, indent=2)
-        elif path.suffix.lower() in ['.yml', '.yaml']:
-            with open(path, 'w') as f:
-                yaml.dump(config_dict, f, default_flow_style=False)
-        else:
-            raise ValueError(f"Unsupported configuration format: {path.suffix}")
+        if not template_path.exists():
+            # Try YAML extension
+            template_path = self.templates_dir / f"{template_name}_config.yaml"
 
-        logger.info(f"Configuration saved to {save_path}")
+        if not template_path.exists():
+            raise FileNotFoundError(f"Template configuration '{template_name}' not found in {self.templates_dir}")
+
+        return self.load_config(str(template_path))
+
+    def list_available_templates(self) -> List[str]:
+        """List available configuration templates"""
+        if not self.templates_dir.exists():
+            return []
+
+        templates = []
+        for file_path in self.templates_dir.glob("*_config.*"):
+            template_name = file_path.stem.replace("_config", "")
+            templates.append(template_name)
+
+        return sorted(set(templates))
 
 
 @dataclass
@@ -147,11 +218,10 @@ class CaseEvaluator:
 
     def __init__(self, config: GenerationConfig = None):
         self.config = config or GenerationConfig()
-        self.evaluation_criteria = self._initialize_evaluation_criteria()
+        self.evaluation_criteria = self._get_evaluation_criteria()
 
     def evaluate_case(self, case: 'TaxLawCase') -> EvaluationMetrics:
         """Comprehensive evaluation of a generated case"""
-
         metrics = EvaluationMetrics(
             case_id=case.case_id,
             complexity_level=case.complexity_level.value,
@@ -162,39 +232,30 @@ class CaseEvaluator:
             evaluation_timestamp=datetime.now().isoformat()
         )
 
-        # Evaluate narrative coherence
+        # Apply evaluation methods
         metrics.narrative_coherence_score = self._evaluate_narrative_coherence(case)
-
-        # Evaluate reasoning validity
         metrics.reasoning_validity_score = self._evaluate_reasoning_validity(case)
-
-        # Evaluate tax law accuracy
         metrics.tax_law_accuracy_score = self._evaluate_tax_accuracy(case)
-
-        # Calculate overall quality score
         metrics.overall_quality_score = self._calculate_overall_quality(metrics)
-
-        # Estimate difficulty
         metrics.estimated_difficulty = self._estimate_difficulty(case)
-
-        # Estimate human solvability
         metrics.human_solvability_score = self._estimate_human_solvability(case)
 
         return metrics
 
     def _evaluate_narrative_coherence(self, case: 'TaxLawCase') -> float:
-        """Evaluate how coherent and well-structured the narrative is"""
+        """Evaluate narrative coherence and completeness"""
         score = 0.0
 
-        # Check if narrative mentions all entities
+        # Entity mention coverage
         entity_mentions = sum(1 for entity in case.entities if entity.name in case.narrative)
         score += (entity_mentions / len(case.entities)) * 0.3
 
-        # Check if narrative describes all events
-        event_mentions = sum(1 for event in case.events if event.event_type.replace('_', ' ') in case.narrative.lower())
+        # Event representation coverage
+        event_mentions = sum(1 for event in case.events
+                           if event.event_type.replace('_', ' ') in case.narrative.lower())
         score += (event_mentions / len(case.events)) * 0.4
 
-        # Check narrative length appropriateness
+        # Length appropriateness
         word_count = len(case.narrative.split())
         target_length = self.config.narrative_length_target
         length_ratio = min(word_count / target_length, target_length / word_count)
@@ -203,154 +264,101 @@ class CaseEvaluator:
         return min(score, 1.0)
 
     def _evaluate_reasoning_validity(self, case: 'TaxLawCase') -> float:
-        """Evaluate the validity of the reasoning chain"""
+        """Evaluate reasoning chain validity and completeness"""
         if not case.reasoning_chain:
             return 0.0
 
         score = 0.0
 
-        # Check if reasoning chain is complete
+        # Required step coverage
         step_types = {step.step_type for step in case.reasoning_chain}
         required_steps = {"fact_identification", "rule_application", "calculation", "conclusion"}
         completeness = len(step_types.intersection(required_steps)) / len(required_steps)
         score += completeness * 0.5
 
-        # Check logical flow
-        for i, step in enumerate(case.reasoning_chain):
-            if step.reasoning_text and len(step.reasoning_text) > 10:
-                score += 0.1  # Each step with meaningful reasoning adds points
+        # Content quality check
+        meaningful_steps = sum(1 for step in case.reasoning_chain
+                             if step.reasoning_text and len(step.reasoning_text) > 10)
+        score += min(meaningful_steps * 0.1, 0.5)
 
-        # Normalize score
-        score = min(score, 1.0)
-
-        return score
+        return min(score, 1.0)
 
     def _evaluate_tax_accuracy(self, case: 'TaxLawCase') -> float:
-        """Evaluate the accuracy of tax law application"""
+        """Evaluate tax law accuracy and application"""
         score = 0.0
 
-        # Check if applicable tax codes are mentioned in reasoning
-        mentioned_codes = 0
-        for step in case.reasoning_chain:
-            if "IRC" in step.reasoning_text:
-                mentioned_codes += 1
+        # Tax code references
+        irc_mentions = sum(1 for step in case.reasoning_chain if "IRC" in step.reasoning_text)
+        score += min(irc_mentions * 0.1, 0.4)
 
-        if mentioned_codes > 0:
-            score += 0.4
-
-        # Check calculation accuracy (simplified check)
-        total_income = sum(e.amount for e in case.events if "income" in e.event_type)
-        total_deductions = sum(e.amount for e in case.events if "deduction" in e.event_type)
+        # Income/deduction presence
+        total_income = sum(e.amount for e in case.events if "income" in e.event_type and e.amount)
+        total_deductions = sum(e.amount for e in case.events if "deduction" in e.event_type and e.amount)
 
         if total_income > 0:
-            score += 0.3  # Case has income to work with
-
+            score += 0.3
         if total_deductions > 0:
-            score += 0.2  # Case has deductions to consider
+            score += 0.2
 
-        # Check if ground truth seems reasonable
+        # Ground truth format check
         if case.ground_truth_answer and "$" in case.ground_truth_answer:
             score += 0.1
 
         return min(score, 1.0)
 
     def _calculate_overall_quality(self, metrics: EvaluationMetrics) -> float:
-        """Calculate overall quality score"""
-        weights = {
-            'narrative_coherence': 0.3,
-            'reasoning_validity': 0.4,
-            'tax_accuracy': 0.3
-        }
+        """Calculate weighted overall quality score"""
+        weights = {'narrative_coherence': 0.3, 'reasoning_validity': 0.4, 'tax_accuracy': 0.3}
 
-        score = (
-                metrics.narrative_coherence_score * weights['narrative_coherence'] +
-                metrics.reasoning_validity_score * weights['reasoning_validity'] +
-                metrics.tax_law_accuracy_score * weights['tax_accuracy']
+        return (
+            metrics.narrative_coherence_score * weights['narrative_coherence'] +
+            metrics.reasoning_validity_score * weights['reasoning_validity'] +
+            metrics.tax_law_accuracy_score * weights['tax_accuracy']
         )
 
-        return score
-
     def _estimate_difficulty(self, case: 'TaxLawCase') -> float:
-        """Estimate the difficulty of the case"""
-        difficulty = 0.0
+        """Estimate case difficulty based on multiple factors"""
+        complexity_weights = {'basic': 0.2, 'intermediate': 0.4, 'advanced': 0.6, 'expert': 0.8}
 
-        # Base difficulty from complexity level
-        complexity_weights = {
-            'basic': 0.2,
-            'intermediate': 0.4,
-            'advanced': 0.6,
-            'expert': 0.8
-        }
-        difficulty += complexity_weights.get(case.complexity_level.value, 0.5)
-
-        # Adjust for number of entities and events
+        difficulty = complexity_weights.get(case.complexity_level.value, 0.5)
         difficulty += (len(case.entities) - 1) * 0.05
         difficulty += (len(case.events) - 2) * 0.03
-
-        # Adjust for reasoning chain complexity
         difficulty += (len(case.reasoning_chain) - 3) * 0.02
 
         return min(difficulty, 1.0)
 
     def _estimate_human_solvability(self, case: 'TaxLawCase') -> float:
-        """Estimate how likely a human expert is to solve this correctly"""
-        base_solvability = 1.0
+        """Estimate human expert solvability"""
+        complexity_penalties = {'basic': 0.0, 'intermediate': 0.1, 'advanced': 0.3, 'expert': 0.5}
 
-        # Reduce solvability based on complexity
-        complexity_penalties = {
-            'basic': 0.0,
-            'intermediate': 0.1,
-            'advanced': 0.3,
-            'expert': 0.5
-        }
-        base_solvability -= complexity_penalties.get(case.complexity_level.value, 0.2)
-
-        # Reduce based on number of interacting elements
+        base_solvability = 1.0 - complexity_penalties.get(case.complexity_level.value, 0.2)
         interaction_penalty = (len(case.entities) * len(case.events)) * 0.01
-        base_solvability -= interaction_penalty
 
-        return max(base_solvability, 0.1)  # Minimum 10% solvability
+        return max(base_solvability - interaction_penalty, 0.1)
 
-    def _initialize_evaluation_criteria(self) -> Dict[str, Any]:
-        """Initialize evaluation criteria and thresholds"""
+    def _get_evaluation_criteria(self) -> Dict[str, Any]:
+        """Get evaluation criteria and thresholds"""
         return {
-            'quality_thresholds': {
-                'excellent': 0.9,
-                'good': 0.7,
-                'acceptable': 0.5,
-                'poor': 0.3
-            },
-            'difficulty_thresholds': {
-                'very_easy': 0.2,
-                'easy': 0.4,
-                'medium': 0.6,
-                'hard': 0.8,
-                'very_hard': 1.0
-            }
+            'quality_thresholds': {'excellent': 0.9, 'good': 0.7, 'acceptable': 0.5, 'poor': 0.3},
+            'difficulty_thresholds': {'very_easy': 0.2, 'easy': 0.4, 'medium': 0.6, 'hard': 0.8, 'very_hard': 1.0}
         }
 
 
 class DatasetGenerator:
-    """Generates complete datasets of tax law cases"""
+    """Enhanced dataset generator with improved organization"""
 
     def __init__(self, config: GenerationConfig = None):
         self.config = config or GenerationConfig()
-        self.case_generator = None  # Will be initialized with TaxLawCaseGenerator
+        self.case_generator = None
         self.evaluator = CaseEvaluator(config)
         self.generated_cases: List['TaxLawCase'] = []
         self.evaluation_results: List[EvaluationMetrics] = []
 
-    def generate_dataset(self,
-                         num_cases: int,
-                         complexity_distribution: Dict[str, float] = None,
-                         output_dir: str = "generated_dataset") -> Dict[str, Any]:
-        """Generate a complete dataset of tax law cases"""
+    def generate_dataset(self, num_cases: int, complexity_distribution: Dict[str, float] = None,
+                        output_dir: str = "generated_dataset") -> Dict[str, Any]:
+        """Generate complete dataset with evaluation"""
 
-        # Use provided distribution or config default
-        if complexity_distribution is None:
-            complexity_distribution = self.config.complexity_distribution
-
-        # Create output directory
+        complexity_distribution = complexity_distribution or self.config.complexity_distribution
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
 
@@ -363,29 +371,24 @@ class DatasetGenerator:
             'evaluation_summary': {}
         }
 
-        # Generate cases according to complexity distribution
+        # Generate cases by complexity
         complexity_counts = self._calculate_complexity_counts(num_cases, complexity_distribution)
-
         logger.info(f"Generating {num_cases} cases with distribution: {complexity_counts}")
 
         for complexity_level, count in complexity_counts.items():
             for i in range(count):
                 try:
-                    # Generate case
                     case = self._generate_single_case(complexity_level)
-                    self.generated_cases.append(case)
-
-                    # Evaluate case
                     evaluation = self.evaluator.evaluate_case(case)
+
+                    self.generated_cases.append(case)
                     self.evaluation_results.append(evaluation)
 
-                    # Add to dataset info
-                    case_info = {
+                    dataset_info['cases'].append({
                         'case_id': case.case_id,
                         'complexity': complexity_level,
                         'evaluation': asdict(evaluation)
-                    }
-                    dataset_info['cases'].append(case_info)
+                    })
 
                     logger.info(f"Generated case {i + 1}/{count} for {complexity_level}")
 
@@ -393,21 +396,17 @@ class DatasetGenerator:
                     logger.error(f"Error generating case: {e}")
                     continue
 
-        # Generate evaluation summary
         dataset_info['evaluation_summary'] = self._generate_evaluation_summary()
-
-        # Save dataset
         self._save_dataset(dataset_info, output_path)
 
         logger.info(f"Dataset generation complete. {len(self.generated_cases)} cases generated.")
         return dataset_info
 
     def _calculate_complexity_counts(self, total_cases: int, distribution: Dict[str, float]) -> Dict[str, int]:
-        """Calculate how many cases to generate for each complexity level"""
+        """Calculate case counts per complexity level"""
         counts = {}
         remaining_cases = total_cases
 
-        # Calculate counts for each complexity level
         for complexity, ratio in distribution.items():
             count = int(total_cases * ratio)
             counts[complexity] = count
@@ -422,16 +421,10 @@ class DatasetGenerator:
         return counts
 
     def _generate_single_case(self, complexity_level: str) -> 'TaxLawCase':
-        """Generate a single case of specified complexity"""
-        # This would use the TaxLawCaseGenerator from the main module
-        # For now, we'll create a mock implementation
-
-        from tax_law_generator import TaxLawCaseGenerator, ComplexityLevel
-
+        """Generate single case using appropriate generator"""
         if self.case_generator is None:
             self.case_generator = TaxLawCaseGenerator(asdict(self.config))
 
-        # Map string to enum
         complexity_map = {
             'basic': ComplexityLevel.BASIC,
             'intermediate': ComplexityLevel.INTERMEDIATE,
@@ -443,13 +436,13 @@ class DatasetGenerator:
         return self.case_generator.generate(complexity_level=complexity_enum)
 
     def _generate_evaluation_summary(self) -> Dict[str, Any]:
-        """Generate summary statistics for the evaluation results"""
+        """Generate statistical summary of evaluation results"""
         if not self.evaluation_results:
             return {}
 
         df = pd.DataFrame([asdict(eval_result) for eval_result in self.evaluation_results])
 
-        summary = {
+        return {
             'total_cases': len(self.evaluation_results),
             'average_quality_score': df['overall_quality_score'].mean(),
             'average_difficulty': df['estimated_difficulty'].mean(),
@@ -459,33 +452,28 @@ class DatasetGenerator:
             'narrative_length_stats': df['narrative_length'].describe().to_dict()
         }
 
-        return summary
-
     def _save_dataset(self, dataset_info: Dict[str, Any], output_path: Path):
-        """Save the generated dataset to files"""
+        """Save complete dataset with cases and evaluation results"""
 
-        # Save main dataset info
-        with open(output_path / "dataset_info.json", 'w') as f:
-            json.dump(dataset_info, f, indent=2)
+        # Save dataset summary
+        _save_config_file(dataset_info, output_path / "dataset_info.json")
 
         # Save individual cases
         cases_dir = output_path / "cases"
         cases_dir.mkdir(exist_ok=True)
 
         for case in self.generated_cases:
-            case_file = cases_dir / f"{case.case_id}.json"
             case_dict = asdict(case)
-
-            # Convert enums to strings for JSON serialization
             case_dict['complexity_level'] = case.complexity_level.value
+
+            # Convert enum values for JSON serialization
             for step in case_dict['reasoning_chain']:
-                step['step_type'] = step['step_type'].value if hasattr(step['step_type'], 'value') else step[
-                    'step_type']
+                if hasattr(step.get('step_type'), 'value'):
+                    step['step_type'] = step['step_type'].value
 
-            with open(case_file, 'w') as f:
-                json.dump(case_dict, f, indent=2)
+            _save_config_file(case_dict, cases_dir / f"{case.case_id}.json")
 
-        # Save evaluation results
+        # Save evaluation results as CSV
         eval_df = pd.DataFrame([asdict(eval_result) for eval_result in self.evaluation_results])
         eval_df.to_csv(output_path / "evaluation_results.csv", index=False)
 
@@ -501,7 +489,7 @@ class GenerativeAIIntegration:
         self.client = self._initialize_client()
 
     def _initialize_client(self):
-        """Initialize the AI client based on provider"""
+        """Initialize AI client based on provider"""
         if self.ai_provider == "openai":
             try:
                 import openai
@@ -521,11 +509,11 @@ class GenerativeAIIntegration:
             return None
 
     def enhance_narrative(self, base_narrative: str, enhancement_prompt: str = None) -> str:
-        """Use generative AI to enhance the narrative quality"""
+        """Use generative AI to enhance narrative quality"""
         if not self.client:
             return base_narrative
 
-        default_prompt = f"""
+        prompt = enhancement_prompt or f"""
         Please enhance this tax law case narrative to make it more realistic and engaging while maintaining accuracy:
 
         {base_narrative}
@@ -536,8 +524,6 @@ class GenerativeAIIntegration:
         - Add realistic details that don't change the tax implications
         - Ensure the narrative flows well and is easy to understand
         """
-
-        prompt = enhancement_prompt or default_prompt
 
         try:
             if self.ai_provider == "openai":
@@ -561,7 +547,7 @@ class GenerativeAIIntegration:
         return base_narrative
 
     def validate_reasoning_chain(self, case: 'TaxLawCase') -> Dict[str, Any]:
-        """Use AI to validate the reasoning chain"""
+        """Use AI to validate reasoning chain"""
         if not self.client:
             return {"valid": True, "feedback": "AI validation unavailable"}
 
@@ -572,10 +558,7 @@ class GenerativeAIIntegration:
         Please validate this tax law reasoning chain for accuracy and completeness:
 
         Case: {case.narrative}
-
-        Reasoning Chain:
-        {reasoning_text}
-
+        Reasoning Chain: {reasoning_text}
         Ground Truth: {case.ground_truth_answer}
 
         Please provide:
@@ -594,8 +577,6 @@ class GenerativeAIIntegration:
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=500
                 )
-                # Parse JSON response
-                import json
                 return json.loads(response.choices[0].message.content)
             elif self.ai_provider == "anthropic":
                 response = self.client.messages.create(
@@ -603,54 +584,59 @@ class GenerativeAIIntegration:
                     max_tokens=500,
                     messages=[{"role": "user", "content": prompt}]
                 )
-                import json
                 return json.loads(response.content[0].text)
         except Exception as e:
             logger.error(f"Error validating reasoning: {e}")
             return {"valid": True, "feedback": f"Validation error: {e}"}
 
 
-# Example configuration files
-def create_sample_configs():
-    """Create sample configuration files"""
+# Configuration utilities
+def create_sample_configs(templates_dir: Optional[str] = None):
+    """Create sample configuration files in templates directory"""
 
-    # Basic configuration
-    basic_config = GenerationConfig(
-        complexity_distribution={"basic": 0.5, "intermediate": 0.3, "advanced": 0.2},
-        min_entities_per_case=1,
-        max_entities_per_case=2,
-        narrative_length_target=300,
-        include_distractors=False
-    )
+    templates_path = Path(templates_dir) if templates_dir else Path("configs/templates")
+    templates_path.mkdir(parents=True, exist_ok=True)
 
-    # Advanced configuration
-    advanced_config = GenerationConfig(
-        complexity_distribution={"intermediate": 0.3, "advanced": 0.4, "expert": 0.3},
-        min_entities_per_case=2,
-        max_entities_per_case=4,
-        narrative_length_target=800,
-        include_distractors=True,
-        show_confidence_scores=True
-    )
+    configs = {
+        "basic": GenerationConfig(
+            complexity_distribution={"basic": 0.5, "intermediate": 0.3, "advanced": 0.2},
+            min_entities_per_case=1,
+            max_entities_per_case=2,
+            narrative_length_target=300,
+            include_distractors=False
+        ),
+        "advanced": GenerationConfig(
+            complexity_distribution={"intermediate": 0.3, "advanced": 0.4, "expert": 0.3},
+            min_entities_per_case=2,
+            max_entities_per_case=4,
+            narrative_length_target=800,
+            include_distractors=True,
+            show_confidence_scores=True
+        )
+    }
 
-    # Save configurations
-    config_manager = ConfigManager()
-    config_manager.save_config(basic_config, "configs/basic_config.json")
-    config_manager.save_config(advanced_config, "configs/advanced_config.json")
+    config_manager = ConfigManager(templates_dir=str(templates_path))
 
-    print("Sample configuration files created in configs/ directory")
+    for name, config in configs.items():
+        config_manager.save_config(config, str(templates_path / f"{name}_config.json"))
+
+    logger.info(f"Sample configuration files created in {templates_path}")
 
 
 # Main execution example
 def main():
-    """Example of using the complete system"""
+    """Example of using the complete enhanced system"""
 
-    # Create sample configurations
+    # Create sample configurations in templates directory
     create_sample_configs()
 
-    # Load configuration
+    # Load configuration from templates
     config_manager = ConfigManager()
-    config = config_manager.load_config("configs/basic_config.json")
+    available_templates = config_manager.list_available_templates()
+    logger.info(f"Available templates: {available_templates}")
+
+    # Load specific template
+    config = config_manager.load_template_config("basic")
 
     # Generate dataset
     dataset_gen = DatasetGenerator(config)
