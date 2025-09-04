@@ -45,7 +45,7 @@ from .ai_integration import (
 )
 
 # Utility imports for convenience
-# from .utils import *
+from ..utils  import *
 
 # Public API - what users should import
 __all__ = [
