@@ -1,12 +1,12 @@
 # Tax Law Reasoning Generator API Documentation
 
-## 📋 **Overview**
+##  **Overview**
 
 The Tax Law Reasoning Generator is a sophisticated system for creating synthetic tax law cases with AI-enhanced narratives and multi-step reasoning chains. It's designed to evaluate and benchmark AI systems' capabilities in complex legal reasoning tasks based on the MuSR (Multi-step Soft Reasoning) framework.
 
 ***
 
-## 🏗️ **Architecture Overview**
+## **Architecture Overview**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -25,7 +25,7 @@ The Tax Law Reasoning Generator is a sophisticated system for creating synthetic
 
 ***
 
-## 📦 **Module Reference**
+## **Module Reference**
 
 ### 1. **Core Generation Engine** (`src.tax_law_generator`)
 
@@ -395,7 +395,7 @@ def export_to_huggingface(cases: List[TaxLawCase], dirpath: str) -> str
 
 ***
 
-## 🚀 **Quick Start Examples**
+##  **Quick Start Examples**
 
 ### **Basic Case Generation**
 
@@ -480,7 +480,7 @@ result = dataset_gen.generate_dataset(num_cases=50)
 
 ***
 
-## 🔧 **Configuration Reference**
+##  **Configuration Reference**
 
 ### **Template Files Structure**
 
@@ -540,7 +540,7 @@ result = dataset_gen.generate_dataset(num_cases=50)
 
 ***
 
-## 📊 **Output Formats and Schema**
+##  **Output Formats and Schema**
 
 ### **Case Output Schema**
 
@@ -611,7 +611,7 @@ result = dataset_gen.generate_dataset(num_cases=50)
 
 ***
 
-## 🔍 **Error Handling and Troubleshooting**
+## **Error Handling and Troubleshooting**
 
 ### **Common Issues and Solutions**
 
@@ -663,7 +663,7 @@ logging.getLogger('src.tax_law_generator').setLevel(logging.DEBUG)
 
 ***
 
-## 🎯 **Performance Considerations**
+##  **Performance Considerations**
 
 ### **Optimization Tips**
 
@@ -681,7 +681,7 @@ logging.getLogger('src.tax_law_generator').setLevel(logging.DEBUG)
 
 ***
 
-## 🔮 **Extension Points**
+##  **Extension Points**
 
 ### **Adding New AI Providers**
 
@@ -729,7 +729,7 @@ class CustomEvaluator(CaseEvaluator):
 
 ***
 
-## 📚 **References and Further Reading**
+## **References and Further Reading**
 
 - **MuSR Framework**: Multi-step Soft Reasoning for AI Evaluation
 - **Tax Law Resources**: IRC Code sections and regulations
@@ -738,7 +738,7 @@ class CustomEvaluator(CaseEvaluator):
 
 ***
 
-## 📧 **Support and Community**
+##  **Support and Community**
 
 - **Issues**: Report bugs and feature requests via GitHub issues
 - **Documentation**: Additional examples in `examples/` directory
