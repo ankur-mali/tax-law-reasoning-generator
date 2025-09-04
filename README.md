@@ -1,8 +1,18 @@
-# Synthetic Tax Law Reasoning Data Generator
+<div align="center" >
+<h1>Synthetic Tax Law Reasoning Data Generator</h1>
+</div>
+<div align="center">
+<em>AI-Powered Synthetic Data Generation to evaluate GenAI reasoning capabilities | Built on MuSR Framework</em>
+<br><br>
+<strong> Quick Links:</strong> 
+<a href="docs/api_reference_guide.md">API Documentation</a> -  
+<a href="docs/configuration_guide.md">Configuration</a> -  
+<a href="docs/extension_guide.md">Extensions</a> -  
+<a href="docs/generated_output_explanation.md">Generated Case Explanation</a> -  
+<a href="output/">Outputs</a>
+</div>
 
-A Python-based system for generating synthetic tax law cases to evaluate GenAI reasoning capabilities, based on the MuSR (Multistep Soft Reasoning) framework.
-
-## 🎯 Project Overview
+## Project Overview
 
 This system generates complex tax law scenarios with complete reasoning chains to test the limits of chain-of-thought reasoning in large language models. It addresses the need for scalable, challenging benchmarks that can evolve with advancing AI capabilities.
 
@@ -15,7 +25,7 @@ This system generates complex tax law scenarios with complete reasoning chains t
 - **AI Integration**: Built-in support for enhancing content with generative AI
 - **Comprehensive Evaluation**: Multi-metric assessment of generated cases
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 tax_law_reasoning_generator/
@@ -37,22 +47,18 @@ tax_law_reasoning_generator/
 │   ├── quickstart.py                 # Quick start example
 │   ├── batch_generation.py           # Batch processing example
 │   └── custom_integration.py         # Custom AI integration example
-├── tests/
-│   ├── test_generators.py            # Unit tests for generators
-│   ├── test_evaluation.py            # Unit tests for evaluation
-│   └── test_integration.py           # Integration tests
 ├── docs/
 │   ├── api_reference.md              # Complete API documentation
 │   ├── configuration_guide.md        # Configuration guide
 │   ├── extension_guide.md            # How to extend the system
-│   └── examples.md                   # Usage examples
+│   └── generated_output_explanation.md.md   # Explaination of genrated output
 ├── requirements.txt                   # Python dependencies
 ├── setup.py                          # Package setup
 ├── README.md                         # Project overview
 └── LICENSE                           # License information
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -64,91 +70,97 @@ cd tax-law-reasoning-generator
 # Install dependencies
 pip install -r requirements.txt
 
-# Install in development mode
-pip install -e .
 ```
+## **Chain-of-Thought Implementation Deep Dive**
 
-### Basic Usage
+### **5-Step Structured Reasoning Process**
+
+1. **Fact Identification**: Extract and organize relevant tax facts
+2. **Rule Application**: Apply specific IRC sections and tax principles
+3. **Calculations**: Detailed mathematical computations with explanations
+4. **Interpretation**: Analyze complex scenarios and edge cases
+5. **Conclusion**: Synthesize findings into final tax determination
+### **AI Enhancement Pipeline**
 
 ```python
-from src.tax_law_generator import TaxLawCaseGenerator, ComplexityLevel
-from src.config_evaluation import GenerationConfig
+# AI enhances each reasoning step
+reasoning_chain = ai_integration.generate_advanced_reasoning(case)
+validation_results = ai_integration.validate_reasoning_chain(case)
+complexity_assessment = ai_integration.assess_case_complexity(case)
+```
 
-# Initialize generator with default configuration
+### Quick Demo Usage
+
+```python
+from src.tax_law_generator.tax_law_generator import TaxLawCaseGenerator, ComplexityLevel
+from src.tax_law_generator.ai_integration import GenerativeAIIntegration, AIConfig, EnhancedTaxLawCaseGenerator
+
+# 1. Basic Generation (Rule-Based)
 generator = TaxLawCaseGenerator()
+case = generator.generate(ComplexityLevel.EXPERT)
+print(f"Generated Case: {case.case_id}")
+print(f"Entities: {len(case.entities)} | Events: {len(case.events)}")
 
-# Generate a single case
-case = generator.generate(complexity_level=ComplexityLevel.INTERMEDIATE)
+# 2. AI-Enhanced Generation (GPT-4 Powered)
+ai_config = AIConfig(api_key="your_openai_key", model="gpt-4")
+ai_integration = GenerativeAIIntegration(ai_config)
+enhanced_generator = EnhancedTaxLawCaseGenerator(generator, ai_integration)
 
-# Access case components
-print(f"Case ID: {case.case_id}")
-print(f"Narrative: {case.narrative}")
-print(f"Ground Truth: {case.ground_truth_answer}")
-
-# Access reasoning chain
-for i, step in enumerate(case.reasoning_chain):
-    print(f"Step {i+1}: {step.reasoning_text}")
-```
-
-### Batch Generation
-
-```python
-from src.config_evaluation import DatasetGenerator, GenerationConfig
-
-# Configure generation parameters
-config = GenerationConfig(
-    complexity_distribution={"basic": 0.3, "intermediate": 0.4, "advanced": 0.3},
-    narrative_length_target=500,
-    include_distractors=True
+enhanced_case = enhanced_generator.generate(
+    ComplexityLevel.EXPERT, 
+    use_ai_enhancement=True
 )
 
-# Generate dataset
-dataset_gen = DatasetGenerator(config)
-dataset_info = dataset_gen.generate_dataset(
-    num_cases=100,
-    output_dir="my_tax_dataset"
-)
+print(f"AI Validation Score: {enhanced_case.ai_validation_results['overall_confidence_score']}")
 
-print(f"Generated {dataset_info['num_cases']} cases")
 ```
 
-## ⚙️ Configuration
 
-The system uses a flexible configuration system supporting JSON and YAML formats:
+
+##  **Configuration \& Customization**
+
+**Template-Driven Flexibility**: Configure via JSON/YAML in `configs/templates/`
 
 ```json
 {
-  "complexity_distribution": {
-    "basic": 0.2,
-    "intermediate": 0.4,
-    "advanced": 0.3,
-    "expert": 0.1
+  "complexity_distribution": {"expert": 0.6, "advanced": 0.4},
+  "ai_enhancement": {
+    "model": "gpt-4",
+    "reasoning_temperature": 0.3,
+    "validation_temperature": 0.1
   },
-  "narrative_length_target": 600,
-  "include_distractors": true,
-  "tax_year": "2024",
-  "jurisdiction": "US_Federal",
-  "applicable_tax_codes": ["IRC_61", "IRC_162", "IRC_170"],
-  "min_reasoning_steps": 4,
-  "max_reasoning_steps": 8
+  "narrative_length_target": 800,
+  "include_distractors": true
 }
 ```
 
-## 🔧 Extension Points
+**See**: [Configuration Guide](docs/configuration_guide.md) for complete options.
 
-### Custom Entity Types
+## **Extensibility Features**
+
+### **Add New AI Providers**
 
 ```python
-class CustomEntityGenerator(EntityGenerator):
-    def __init__(self, config):
-        super().__init__(config)
-        self.entity_templates.update({
-            "trust": {
-                "attributes": ["trust_type", "beneficiaries", "assets"],
-                "complexity_factors": ["distribution_rules", "tax_elections"]
-            }
-        })
+class CustomAIProvider(AIProvider):
+    def generate_text(self, prompt: str) -> str:
+        # Integrate Claude, Gemini, or custom models
+        pass
 ```
+
+
+### **Custom Entity Types**
+
+```python
+# Add to entity_templates.json
+{
+  "nonprofit_org": {
+    "tax_exemption_status": ["501c3", "501c4"],
+    "complexity_factors": ["unrelated_business_income"]
+  }
+}
+```
+
+**See**: [Extension Guide](docs/extension_guide.md) for complete examples.
 
 ### Custom Reasoning Steps
 
@@ -177,7 +189,7 @@ class CustomAIProvider(GenerativeAIIntegration):
         return enhanced_narrative
 ```
 
-## 📊 Evaluation Framework
+## Evaluation Framework
 
 The system includes comprehensive evaluation metrics:
 
@@ -199,27 +211,23 @@ print(f"Estimated Difficulty: {metrics.estimated_difficulty:.2f}")
 print(f"Human Solvability: {metrics.human_solvability_score:.2f}")
 ```
 
-## 🧪 Testing
+## **Documentation \& Resources**
 
-Run the test suite:
+- **[Complete API Reference](docs/api_reference.md)**: Detailed class and method documentation
+- **[Configuration Guide](docs/configuration_guide.md)**: Customize generation parameters
+- **[Extension Guide](docs/extension_guide.md)**: Add new features and domains
+- **[Example Usage](examples/)**: Batch processing, custom integration patterns
 
-```bash
-# All tests
-python -m pytest tests/
+***
 
-# Specific test categories
-python -m pytest tests/test_generators.py
-python -m pytest tests/test_evaluation.py
-```
-
-## 📈 Performance Considerations
+##  Performance Considerations
 
 - **Memory Usage**: Large datasets may require batch processing
 - **Generation Speed**: ~1-5 seconds per case depending on complexity
 - **AI Enhancement**: Optional but significantly improves quality
 - **Parallelization**: Supported for batch generation
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -238,7 +246,7 @@ logging.basicConfig(level=logging.DEBUG)
 generator = TaxLawCaseGenerator(config={"debug_mode": True})
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature-name`
@@ -255,12 +263,10 @@ pip install -r requirements-dev.txt
 # Install pre-commit hooks
 pre-commit install
 
-# Run code formatting
-black src/ tests/
-isort src/ tests/
+
 ```
 
-## 📚 Advanced Usage
+## Advanced Usage
 
 ### Custom Tax Domain
 
@@ -302,7 +308,7 @@ exporter.to_jsonlines(cases, "cases.jsonl")
 exporter.to_csv(evaluation_results, "results.csv")
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
@@ -311,3 +317,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Based on the MuSR paper: "Testing the Limits of Chain-of-thought with Multistep Soft Reasoning"
 - Inspired by the need for scalable AI evaluation benchmarks
 - Built with flexibility for future GenAI evaluation methods
+
+
+------------
+## Author
+**Ankur Mali**🎓 Master's Student – Engineering Technology & Sustainable Technology Management. Based in Berlin📫 [LinkedIn](https://www.linkedin.com/in/ankur-mali-/) | [GitHub](https://github.com/ankur-mali)
