@@ -114,8 +114,135 @@ enhanced_case = enhanced_generator.generate(
 print(f"AI Validation Score: {enhanced_case.ai_validation_results['overall_confidence_score']}")
 
 ```
+##  **Environment Setup**
+
+### **Required Environment Variables**
+### create a .env file with
+
+```bash
+# Set OpenAI API key
+OPENAI_API_KEY="your_openai_api_key_here"
+```
+
+## **Basic Usage Examples**
+
+### **1. Quick Generation Demo**
+
+Generate a single tax law case to see the system in action:
+
+```bash
+# Generate expert-level case
+python -m examples.quickstart generate --complexity expert
+
+# Generate intermediate-level case
+python -m examples.quickstart generate --complexity intermediate
+
+# Generate with specific configuration
+python -m examples.quickstart generate --complexity advanced --config configs/templates/advanced_config.json
+```
+
+**What you'll see:**
+
+- Generated case information (ID, entities, events)
+- AI validation scores and complexity assessment
+- Sample narrative and reasoning chain output
+- JSON file saved to `output/` directory
+
+***
+
+## **Batch Generation Examples**
+
+### **2. Large-Scale Dataset Creation**
+
+Perfect for research or evaluation purposes:
+
+```bash
+# Generate 100 cases with AI enhancement
+python examples/batch_generation.py --cases 100 --output my_dataset --api-key your_openai_key
+
+# Generate 50 cases without AI (faster, but less sophisticated)
+python examples/batch_generation.py --cases 50 --no-ai --output basic_dataset
+
+# Use specific configuration template
+python examples/batch_generation.py --config basic --cases 25 --output small_dataset
+
+# Generate with custom complexity distribution
+python examples/batch_generation.py --cases 200 --config advanced --output research_dataset
+```
 
 
+### **Advanced Batch Options**
+
+```bash
+# Analyze existing dataset results
+python examples/batch_generation.py --analyze-only --output existing_dataset
+
+# Generate with verbose logging
+python examples/batch_generation.py --cases 50 --output verbose_dataset --api-key your_key
+
+# Generate specific complexity level only
+python examples/batch_generation.py --cases 30 --complexity expert --output expert_only
+```
+
+**Output Structure:**
+
+```
+my_dataset/
+├── dataset_info.json          # Summary and metadata
+├── cases/                     # Individual case files
+│   ├── case_001.json
+│   ├── case_002.json
+│   └── ...
+├── evaluation_results.csv     # Quality metrics
+└── logs/                      # Generation logs
+```
+
+
+***
+
+## **AI Integration Examples**
+
+### **3. Custom AI Integration Demos**
+
+Explore advanced AI features and customization:
+
+```bash
+# Run all AI integration demonstrations
+python examples/custom_integration.py --api-key your_openai_key
+
+# Run specific demonstration types
+python examples/custom_integration.py --demo basic --api-key your_key
+python examples/custom_integration.py --demo multi --api-key your_key
+python examples/custom_integration.py --demo validation --api-key your_key
+
+# Multi-provider setup with fallback
+python examples/custom_integration.py --demo multi --api-key primary_key --fallback-key backup_key
+
+# Save results to custom file
+python examples/custom_integration.py --api-key your_key --output my_ai_results.json
+```
+
+
+### **AI Demo Types:**
+
+| **Demo Type** | **Description** | **Command** |
+| :-- | :-- | :-- |
+| `basic` | Basic AI enhancement workflow | `--demo basic` |
+| `multi` | Multi-provider integration | `--demo multi` |
+| `validation` | AI validation workflow | `--demo validation` |
+| `all` | All demonstrations (default) | `--demo all` |
+
+
+***
+
+##  **Environment Setup**
+
+### **Required Environment Variables**
+
+```bash
+# Set OpenAI API key
+export OPENAI_API_KEY="your_openai_api_key_here"
+```
 
 ##  **Configuration \& Customization**
 
