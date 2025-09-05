@@ -16,10 +16,6 @@ import pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
 
-# from src.tax_law_generator.ai_integration import *
-# from src.tax_law_generator.tax_law_generator import *
-# from src.tax_law_generator.config_evaluation import  *
-# from src.utils.data_structures import SomeDataClass
 from src.tax_law_generator import (
     TaxLawCaseGenerator,
     ComplexityLevel,
