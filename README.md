@@ -6,6 +6,7 @@
 <br><br>
 <strong> Quick Links:</strong> 
 <a href="docs/api_reference_guide.md">API Documentation</a> -  
+<a href="docs/Underlying_Architecture.md">Architecture</a> -  
 <a href="docs/configuration_guide.md">Configuration</a> -  
 <a href="docs/extension_guide.md">Extensions</a> -  
 <a href="docs/generated_output_explanation.md">Generated Case Explanation</a> -  
